@@ -1,0 +1,15 @@
+[Unit]
+Description=MegaSnake game server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/megasnake
+Environment=NODE_ENV=production
+Environment=PORT=8787
+ExecStart=/usr/bin/npm run start --workspace=server
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

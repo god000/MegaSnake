@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MegaRace Chaos</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0f1a;
+        --panel: #131a2c;
+        --panel-2: #1b243b;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --accent: #38bdf8;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      #app {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+      }
+      h1 {
+        margin: 4px 0 0;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+      h1 .accent {
+        color: var(--accent);
+      }
+      .row {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--panel-2);
+        border-radius: 10px;
+        padding: 12px 14px;
+      }
+      #stage {
+        position: relative;
+      }
+      #game {
+        background: #0b0f1a;
+        border-radius: 10px;
+        display: block;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        outline: none;
+      }
+      #hud {
+        width: 240px;
+        flex: 0 0 240px;
+        align-self: flex-start;
+      }
+      #hud .statuses .chip {
+        max-width: 100%;
+      }
+      .timer {
+        font-size: 28px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        text-align: center;
+        margin-bottom: 8px;
+      }
+      .leaderboard .row {
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 14px;
+      }
+      .leaderboard .swatch {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      .leaderboard .name {
+        flex: 1;
+      }
+      .leaderboard .len {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+      }
+      #menu-overlay,
+      #report-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(11, 15, 26, 0.86);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--panel-2);
+        padding: 20px 24px;
+        border-radius: 12px;
+        max-width: 460px;
+      }
+      .card h2 {
+        margin: 0 0 12px;
+      }
+      .card label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      .card input {
+        width: 100%;
+        padding: 8px 10px;
+        font-size: 14px;
+        border-radius: 6px;
+        background: #0b1020;
+        color: var(--text);
+        border: 1px solid #2a3656;
+      }
+      .card button {
+        margin-top: 14px;
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 14px;
+        border-radius: 8px;
+        background: var(--accent);
+        color: #032030;
+        border: none;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .card button.secondary {
+        background: #1b243b;
+        color: var(--text);
+        border: 1px solid #2a3656;
+      }
+      .room-code {
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: 0.2em;
+        text-align: center;
+        margin: 8px 0 12px;
+        color: var(--accent);
+        font-variant-numeric: tabular-nums;
+      }
+      .room-players {
+        margin: 8px 0 0;
+        padding: 0;
+        list-style: none;
+        font-size: 14px;
+      }
+      .room-players li {
+        padding: 4px 0;
+        border-bottom: 1px solid #1f2944;
+      }
+      .menu-error {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #f87171;
+        min-height: 16px;
+      }
+      .hint {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 10px;
+      }
+      .statuses {
+        margin-top: 12px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .statuses .chip {
+        display: inline-block;
+        padding: 2px 6px;
+        margin: 2px 4px 2px 0;
+        border: 1px solid var(--panel-2);
+        background: var(--panel-2);
+        border-radius: 6px;
+        color: var(--text);
+        font-size: 11px;
+      }
+      .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+      }
+      .report-table th,
+      .report-table td {
+        text-align: left;
+        padding: 4px 8px;
+        border-bottom: 1px solid #1f2944;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>MegaRace <span class="accent">Chaos</span></h1>
+      <div class="row">
+        <div id="stage" class="panel" style="padding: 8px;">
+          <canvas id="game" width="960" height="576"></canvas>
+          <div id="menu-overlay">
+            <div class="card" id="main-menu-panel">
+              <h2>Меню</h2>
+              <label for="name-input">Никнейм</label>
+              <input id="name-input" type="text" maxlength="16" placeholder="Player" />
+              <label for="ability-input" style="margin-top:10px;">Суперспособность</label>
+              <select id="ability-input" style="width:100%;padding:8px 10px;background:#0b1020;color:#e2e8f0;border:1px solid #2a3656;border-radius:6px;">
+                <option value="dashAbility">Рывок</option>
+                <option value="burstRun">Быстрый бег</option>
+                <option value="headTailSwap">Свап головы/хвоста</option>
+                <option value="foodPulse">Пищевой импульс</option>
+                <option value="phaseShift">Фазовый проход</option>
+              </select>
+              <button id="debug-bots-btn">Играть с ботами</button>
+              <button id="create-room-btn">Создать комнату</button>
+              <button id="open-join-panel-btn" class="secondary">Войти по коду</button>
+              <p class="hint">Управление — стрелки или WASD. После входа кликните по полю игры, если клавиши не реагируют. Дабл-тап по направлению активирует способность.</p>
+              <div id="menu-error" class="menu-error"></div>
+            </div>
+            <div class="card" id="join-panel" style="display: none">
+              <h2>Вход по коду</h2>
+              <label for="room-code-input">Код комнаты</label>
+              <input id="room-code-input" type="text" maxlength="6" placeholder="ABC123" autocapitalize="characters" />
+              <button id="join-room-btn">Войти</button>
+              <button id="back-to-main-btn" class="secondary">Назад</button>
+              <div id="join-error" class="menu-error"></div>
+            </div>
+            <div class="card" id="room-panel" style="display: none">
+              <h2>Комната</h2>
+              <p class="hint" style="margin-top:0;">Отправьте код друзьям</p>
+              <div id="room-code" class="room-code">------</div>
+              <ul id="room-players" class="room-players"></ul>
+              <button id="start-room-btn" style="display: none">Старт</button>
+              <p id="room-wait-hint" class="hint">Ждём хоста</p>
+            </div>
+          </div>
+          <div id="report-overlay" style="display: none">
+            <div class="card">
+              <h2>Конец матча</h2>
+              <div id="report-body"></div>
+              <p class="hint">Хост может запустить следующий матч.</p>
+            </div>
+          </div>
+        </div>
+        <div id="hud" class="panel">
+          <div class="timer" id="timer">--:--</div>
+          <div class="leaderboard" id="leaderboard"></div>
+          <div class="statuses" id="statuses"></div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
