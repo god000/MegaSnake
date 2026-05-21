@@ -6,7 +6,9 @@ export {
   consumeAt,
   consumeHammerHeadSweep,
   effectiveTicksPerStep,
+  occupiesOtherSnake,
   setMysteryResolver,
   stepHeadTo,
+  stepOrBounceOnOtherSnakeHit,
   tickStatuses,
 } from "../boostEffects.js";

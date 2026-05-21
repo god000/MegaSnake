@@ -48,6 +48,7 @@ import {
   consumeAt,
   consumeHammerHeadSweep,
   effectiveTicksPerStep,
+  stepOrBounceOnOtherSnakeHit,
   stepHeadTo,
   tickStatuses,
 } from "./boosts/index.js";
@@ -281,12 +282,14 @@ export class Match {
       const dx = s.dir === "left" ? -1 : s.dir === "right" ? 1 : 0;
       const dy = s.dir === "up" ? -1 : s.dir === "down" ? 1 : 0;
       const next = { x: wrap(head.x + dx, FIELD_W), y: wrap(head.y + dy, FIELD_H) };
-      stepHeadTo(s, next);
+      const moved = stepOrBounceOnOtherSnakeHit(this.state, s, next);
       this.applyTerrainAndEventEffects(s);
-      consumeAt(this.state, s, next, this.rng);
-      consumeHammerHeadSweep(this.state, s, this.rng);
-      this.handleTeleport(s);
-      this.handleCoreCarry(s);
+      if (moved) {
+        consumeAt(this.state, s, next, this.rng);
+        consumeHammerHeadSweep(this.state, s, this.rng);
+        this.handleTeleport(s);
+        this.handleCoreCarry(s);
+      }
     }
 
     // 3. Update statuses (drain, magnet pulls, fake food cleanup)

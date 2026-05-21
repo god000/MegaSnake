@@ -17,6 +17,7 @@ import {
   ENDGAME_SCORE_MULTIPLIER,
   type ActiveStatus,
   type BoostId,
+  type Direction,
   FIELD_H,
   FIELD_W,
   FOOD_GROWTH,
@@ -36,6 +37,13 @@ import {
 import { rndInt } from "./rng.js";
 
 const HARD_DEBUFF_COOLDOWN_MS = 4000;
+
+const OPPOSITE_DIR: Record<Direction, Direction> = {
+  up: "down",
+  down: "up",
+  left: "right",
+  right: "left",
+};
 
 let dynCounter = 0;
 
@@ -116,7 +124,8 @@ export function applyBoost(
       for (let i = 0; i < cells; i++) {
         const nx = wrap(source.body[0]!.x + dx, FIELD_W);
         const ny = wrap(source.body[0]!.y + dy, FIELD_H);
-        stepHeadTo(source, { x: nx, y: ny });
+        const to = { x: nx, y: ny };
+        if (!stepOrBounceOnOtherSnakeHit(state, source, to)) break;
         consumeAt(state, source, source.body[0]!, rng);
         consumeHammerHeadSweep(state, source, rng);
       }
@@ -307,6 +316,37 @@ export function stepHeadTo(snake: Snake, to: Vec2): void {
   } else {
     snake.body.pop();
   }
+}
+
+function hasPhantomPass(snake: Snake, elapsedMs: number): boolean {
+  return snake.statuses.some((st) => st.id === "phantomPass" && st.expiresAt > elapsedMs);
+}
+
+/** True if `pos` is occupied by any segment of another alive snake (unless phantom pass). */
+export function occupiesOtherSnake(state: GameState, snake: Snake, pos: Vec2): boolean {
+  if (hasPhantomPass(snake, state.elapsedMs)) return false;
+  for (const other of state.snakes) {
+    if (other.id === snake.id || !other.alive) continue;
+    for (let i = 0; i < other.body.length; i++) {
+      if (vecEq(pos, other.body[i]!)) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Step into `to` unless another snake blocks the tile — then reverse 180° and stay put.
+ * Returns whether the head actually moved.
+ */
+export function stepOrBounceOnOtherSnakeHit(state: GameState, snake: Snake, to: Vec2): boolean {
+  if (!occupiesOtherSnake(state, snake, to)) {
+    stepHeadTo(snake, to);
+    return true;
+  }
+  const reversed = OPPOSITE_DIR[snake.dir];
+  snake.dir = reversed;
+  snake.nextDir = reversed;
+  return false;
 }
 
 /**
